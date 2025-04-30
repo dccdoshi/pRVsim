@@ -1,7 +1,5 @@
-import torch 
 from astropy import constants as const
 import numpy as np 
-from scipy.signal import argrelextrema
 from scipy.interpolate import (
     InterpolatedUnivariateSpline,
     make_interp_spline,

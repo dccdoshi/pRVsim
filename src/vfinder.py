@@ -1,40 +1,9 @@
 import numpy as np
-import matplotlib.pylab as plt
-from scipy.stats import norm
-from astropy.time import Time
-import PyAstronomy.pyasl as pya 
-from astropy import constants as const
-from scipy.signal import argrelextrema
-from scipy.interpolate import InterpolatedUnivariateSpline,Akima1DInterpolator
-from numba import jit
 from typing import Any, List, Optional, Tuple, Union
 from scipy.ndimage import binary_dilation
 from scipy.optimize import minimize_scalar
 from interpolater import *
 from convolution import *
-        
-def get_sigma_int(Q,SNR):
-    '''
-    Q is the Bouchy Quality Factor
-    m is the H magnitude of the star
-    R is the resolution sampling of the spectrograph
-    D is the diameter of the telescope in m
-    t is the exposure time in s
-    '''
-
-    Q = Q/1e4
-    sig_int_for_100 = 4.3121251347*Q**2 + 4.3939259825*Q + 2.2313266390
-
-    sigma_int = sig_int_for_100 * (SNR/100)**2
-
-    return sigma_int
-
-def get_quality_factor(A0,lam):
-    dA0dlam = np.gradient(A0,lam)
-    W = (lam*dA0dlam)**2/A0
-    Q = np.sqrt(np.sum(W))/np.sqrt(np.sum(A0))
-
-    return Q
 
 class Velocity_Finder():
     def __init__(self,template,phoenix_wgrid,inst_wgrid,berv,base=False,inst_res=70000,T_epochs=0,fix=False,version='univariate'):
@@ -64,16 +33,6 @@ class Velocity_Finder():
             self.T_factor = 1/np.sqrt(T_epochs)
         else:
             self.T_factor = 0
-
-        if self.fix:
-            if self.base:
-                self.I_factor = 0
-            else:
-                self.I_factor = 1
-        else:
-            self.I_factor=0
-
-
         pass
 
     def new_model(self, dv):
@@ -149,8 +108,6 @@ class Velocity_Finder():
         # Apply the expanded NaN mask to the other array
         model_y[:,expanded_nan_mask] = np.nan
 
-
-
         # Only consider the middle portions as the ends may be affected by bad interpolation
         start = int(len(data)*0.05)
         end = int(len(data)*0.95)
@@ -160,15 +117,7 @@ class Velocity_Finder():
         sigt = (sig*self.T_factor)**2 # Uncertainty of template
         sigo  = sig**2 # Uncertainty of observation
 
-        if self.I_factor == 1:
-            Q = get_quality_factor(model_y[0][start:end],self.instrument_wgrid[start:end])
-            SNR = np.median(np.sqrt(model_y[0][start:end]))
-            sigi = get_sigma_int(Q,SNR)**2
-
-        else:
-            sigi = 0
-
-        sig = sigo+sigt+sigi
+        sig = sigo+sigt
 
         # Will not use ends of spectrum as they will be affected by convolution 
         # This is taken as Equation 2 from (Silva et al. 2022)
@@ -177,16 +126,6 @@ class Velocity_Finder():
 
         return chi2
 
-    def get_values_for_QI(self):
-        start = int(len(self.instrument_wgrid)*0.05)
-        end = int(len(self.instrument_wgrid)*0.95)
-        # Calculate the shifted model
-        model_y = self.new_model([0])
-        Q = get_quality_factor(model_y[0][start:end],self.instrument_wgrid[start:end])
-        SNR = np.median(np.sqrt(model_y[0][start:end]))
-        sigi = get_sigma_int(Q,SNR)**2
-
-        return Q,sigi,SNR
 
     def find_dv(self, data, dv, sig):
         '''

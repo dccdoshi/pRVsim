@@ -38,11 +38,16 @@ class Template:
         upsampled_flux : ndarray
             Spectra simply interpolated onto upsampled_wgrid (no RV correction). Shape (n_epochs, n_pixels).
         """
-        n_epochs = len(self.berv)
-        shifted_grid = relativistic_shift(self.upsampled_wgrid, self.berv)
 
+        # Initialize
+        n_epochs = len(self.berv)
         self.shifted_flux = np.zeros((n_epochs, len(self.upsampled_wgrid)))
         upsampled_flux = np.zeros_like(self.shifted_flux)
+
+
+        # Calculate BERV shifted grids
+        shifted_grid = relativistic_shift(self.upsampled_wgrid, self.berv)
+
 
         for i in range(n_epochs):
             # Upsample observation to template grid

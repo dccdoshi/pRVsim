@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import norm
 from astropy.time import Time
 from astropy import constants as const
 import PyAstronomy.pyasl as pya
@@ -171,6 +170,7 @@ class Observations:
         convolved : ndarray
             Spectra convolved but still on native grid.
         """
+        # Define the wavelength solution for observations
         if use_inst_wgrid:
             if use_spirou_wgrid:
                 use_grid = self.instrument_wavegrid
@@ -181,17 +181,22 @@ class Observations:
             use_grid = self.native_wgrid
 
         self.instrument_wgrid = use_grid
+
+        # Intialize parameters
         N = len(self.RV)
         instrument_spectra = np.zeros((N, len(use_grid)))
         convolved = np.zeros((N, len(self.native_wgrid)))
 
+        # Change the spectra
         for i in range(N):
+            # Apply the spectral braodening
             wgrid, spec = gauss_convolve(
                 self.native_wgrid, self.spectra[i],
                 instrument_res, n_fwhm=7, res_rtol=1e-6,
                 mode='same', i_plot=True
             )
             convolved[i] = spec
+            # Place on instrument wavelength solution
             instrument_spectra[i] = interpolate(wgrid, spec, self.instrument_wgrid)
 
         self.instrument_spectra = instrument_spectra
@@ -213,10 +218,16 @@ class Observations:
         sig : ndarray
             Estimated 1-sigma uncertainty per pixel.
         """
+
+        np.random.seed(seed)
+        # Only apply the poisson noise to spectra that is not NaN and above 0 
+        valid = ~np.isnan(self.instrument_spectra) & (self.instrument_spectra > 0)
+
+        # Add the noise
+        self.instrument_spectra[valid] = np.random.poisson(lam=self.instrument_spectra[valid])
+
+        # Define the uncertainty
         with np.errstate(invalid='ignore'):
             sig = np.abs(np.sqrt(self.instrument_spectra))
 
-        np.random.seed(seed)
-        valid = ~np.isnan(self.instrument_spectra) & (self.instrument_spectra > 0)
-        self.instrument_spectra[valid] = np.random.poisson(lam=self.instrument_spectra[valid])
         return self.instrument_spectra.copy(), sig.copy()

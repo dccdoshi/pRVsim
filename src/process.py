@@ -1,5 +1,4 @@
 import numpy as np
-from hapi import *
 from interpolater import *
 from convolution import *
 
