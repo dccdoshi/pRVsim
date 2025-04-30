@@ -7,7 +7,6 @@ from astropy import constants as const
 from scipy.interpolate import InterpolatedUnivariateSpline
 from typing import Any, List, Optional, Tuple, Union
 from interpolater import *
-from scipy.signal import savgol_filter
 
 class Template():
     def __init__(self,bervs,upsampled_wgrid,inst_wgrid):
@@ -26,7 +25,7 @@ class Template():
         self.inst_wgrid = inst_wgrid
         pass
 
-    def shift_back_by_bervs(self, flux,applysav = False,N=5,po=2):
+    def shift_back_by_bervs(self, flux,version='univariate'):
         """
         Apply a doppler shift and then interpolate for shifted flux to move templates back to "0 RV"
 
@@ -47,12 +46,10 @@ class Template():
         # Iterate over each spectrum
         for i in range(len(self.shifted_flux)): 
             # Upsample each observation to the upsampled space
-            upsampled_flux[i] = interpolate(self.inst_wgrid,flux[i],self.upsampled_wgrid)
-            if applysav:
-                upsampled_flux[i] = savgol_filter(upsampled_flux[i],window_length=N,polyorder=po)
+            upsampled_flux[i] = interpolate(self.inst_wgrid,flux[i],self.upsampled_wgrid,version)
 
             # Doppler shift it by -Berv
-            self.shifted_flux[i] = interpolate(shifted_grid[i],upsampled_flux[i],self.upsampled_wgrid)
+            self.shifted_flux[i] = interpolate(shifted_grid[i],upsampled_flux[i],self.upsampled_wgrid,version)
 
 
 

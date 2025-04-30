@@ -2,7 +2,6 @@ import numpy as np
 from hapi import *
 from interpolater import *
 from convolution import *
-from scipy.signal import savgol_filter
 
 class Process():
 
@@ -10,9 +9,6 @@ class Process():
         self.wgrid = wavegrid.copy()
         self.spectra = spectra.copy()
 
-    def apply_savgol(self):
-        self.spectra = savgol_filter(self.spectra,window_length=5,polyorder=2,axis=-1)
-        return self.spectra.copy()
     def normalize_spectra(self,const,SNR):
         self.spectra = self.spectra/const
 

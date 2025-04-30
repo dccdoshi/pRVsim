@@ -2,16 +2,46 @@ import torch
 from astropy import constants as const
 import numpy as np 
 from scipy.signal import argrelextrema
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import (
+    InterpolatedUnivariateSpline,
+    make_interp_spline,
+    interp1d,
+    CubicSpline,
+    PchipInterpolator
+)
 
 speed_of_light_ms = const.c.value
 
-def interpolate(x,y,xs):
+def interpolate(x,y,xs,version='univariate'):
     '''Interpolating function'''
+    if version=='univariate':
+        spl = InterpolatedUnivariateSpline(x, y,ext=3)
+        return spl(xs)
 
-    spl = InterpolatedUnivariateSpline(x, y,ext=3)
-    interpolated_flux = spl(xs)
-    return interpolated_flux
+    elif version == 'make':
+        spline = make_interp_spline(x, y, k=3)
+        return spline(xs)
+
+    elif version == 'np':
+        spline = make_interp_spline(x, y, k=3)
+        return spline(xs)
+
+    elif version == 'interp1d':
+        f = interp1d(x, y, kind='cubic', fill_value='extrapolate')
+        return f(xs)
+
+    elif version == 'cubic':
+        cs = CubicSpline(x, y, bc_type='natural')  # or 'clamped'
+        return cs(xs)
+
+    elif version == 'numpy':
+        return np.interp(xs, x, y)  # linear only
+
+    elif version == 'pchip':
+        pchip = PchipInterpolator(x, y)
+        return pchip(xs)
+    
+    
 
 def get_magic_grid(wave0: float, wave1: float, dv_grid: float = 500):
     """

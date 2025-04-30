@@ -150,7 +150,7 @@ class Observations():
 
         return self.RV, self.planet
  
-    def doppler_shift(self,flux):
+    def doppler_shift(self,flux,version='univariate'):
         """
         Apply a doppler shift to the native wavelength grid and then interpolate for shifted flux
 
@@ -168,7 +168,7 @@ class Observations():
         # Shift the flux according to the doppler shift by interpolating
         self.spectra = np.zeros((len(self.RV),len(self.native_wgrid)))
         for i in range(len(shifted_grid)):
-            self.spectra[i] = interpolate(shifted_grid[i],flux, self.native_wgrid)
+            self.spectra[i] = interpolate(shifted_grid[i],flux, self.native_wgrid,version)
 
         return self.spectra.copy()
 
@@ -283,9 +283,10 @@ class Observations():
             sig = np.abs(np.sqrt(self.instrument_spectra))
 
         np.random.seed(seed)
+        valid = ~np.isnan(self.instrument_spectra) & (self.instrument_spectra > 0)
 
         # Create the noise spectrum
-        self.instrument_spectra = np.random.poisson(lam=self.instrument_spectra)
+        self.instrument_spectra[valid] = np.random.poisson(lam=self.instrument_spectra[valid])
 
         # Add noise to observations
         # self.instrument_spectra = self.instrument_spectra + noise

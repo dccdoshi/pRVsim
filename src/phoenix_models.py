@@ -24,7 +24,7 @@ try:
     base_dir = os.environ['SCRATCH']
 except KeyError:
     base_dir = Path.home()
-base_dir = "/Users/dhvanidoshi/Documents/Winter_2025/final_template/data/"
+base_dir = "/homes/janeway/dcdoshi/template_stuff/nuno/data"
 DEFAULT_MODEL_DIR = Path(base_dir) / Path("Models/PHOENIX_HiRes/")
 MODEL_SUB_DIR = Path('PHOENIX-ACES-AGSS-COND-2011/')
 URL_ROOT = "ftp://phoenix.astro.physik.uni-goettingen.de/HiResFITS/"

@@ -37,7 +37,7 @@ def get_quality_factor(A0,lam):
     return Q
 
 class Velocity_Finder():
-    def __init__(self,template,phoenix_wgrid,inst_wgrid,berv,base=False,inst_res=70000,T_epochs=0,fix=False):
+    def __init__(self,template,phoenix_wgrid,inst_wgrid,berv,base=False,inst_res=70000,T_epochs=0,fix=False,version='univariate'):
         '''
         In this class we will find the relative velocity between the template and an observation, 
         this relative velocity should only be the planetary signal. 
@@ -57,7 +57,7 @@ class Velocity_Finder():
         self.instrument_wgrid = inst_wgrid
         self.berv = berv
         self.fix = fix
-
+        self.version = version
         self.base = base
         self.inst_res = inst_res
         if not(self.base):
@@ -101,7 +101,7 @@ class Velocity_Finder():
                 # Include the broadening factor that we applied for the instrument
                 wgrid, spec = gauss_convolve(self.phoenix_wgrid, inbetween, self.inst_res, n_fwhm=7, res_rtol=1e-6, mode='same', i_plot=True)
                 # Interpolate to the instrument grid
-                shifted_model[i] = interpolate(wgrid,spec, self.instrument_wgrid)
+                shifted_model[i] = interpolate(wgrid,spec, self.instrument_wgrid,self.version)
 
         # If we are using an empirical template
         else:
@@ -110,7 +110,7 @@ class Velocity_Finder():
             shifted_model = np.zeros((len(dv),len(self.instrument_wgrid)))
             for i in range(len(dv)):
                 # Interpolate the shifted flux onto the instrument grid 
-                shifted_model[i] = interpolate(shifted_grid[i],self.template, self.instrument_wgrid)
+                shifted_model[i] = interpolate(shifted_grid[i],self.template, self.instrument_wgrid,self.version)
 
         return shifted_model
 
@@ -173,7 +173,7 @@ class Velocity_Finder():
         # Will not use ends of spectrum as they will be affected by convolution 
         # This is taken as Equation 2 from (Silva et al. 2022)
         residual = ((data[start:end]-model_y[:,start:end]))**2/sig[start:end]
-        chi2 = np.nansum(residual)
+        chi2 = np.nansum(residual,axis=1)
 
         return chi2
 
@@ -209,7 +209,7 @@ class Velocity_Finder():
         xmm1 = self.chi2(rvmin-dv,data,sig)
 
         # Equation 3 from paper
-        rvorder = rvmin - (dv/2)*(xmp1-xmm1)/(xmp1+xmm1-(2*xm))
+        rvorder = rvmin - (dv/2)*(xmp1-xmm1)/(xmp1+xmm1-2*xm)
         unc_dv = (2*dv**2)/(xmm1-(2*xm)+xmp1) 
 
         return rvorder, unc_dv
@@ -262,7 +262,7 @@ class Velocity_Finder():
         # The std of this should be 1 if not affected by interpolation errors
         zscore = ((data[start:end]-model_y[:,start:end]))/sig[start:end]
 
-        return np.mean(zscore)
+        return np.std(zscore)
 
 
 
