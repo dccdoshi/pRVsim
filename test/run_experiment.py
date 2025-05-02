@@ -3,18 +3,12 @@ sys.path.append('../src')
 
 import numpy as np
 import matplotlib.pylab as plt
-from scipy.stats import norm
-from astropy.time import Time
-from scipy.signal import find_peaks
-import PyAstronomy.pyasl as pya 
-from astropy import constants as const
-from stellar import Stellar_Spectrum
+from stellar import StellarSpectrum
 from observations import Observations
 from process import Process
 from template import Template
 from convolution import *
 from interpolater import *
-from scipy.signal import argrelextrema
 from vfinder import Velocity_Finder
 from telluric_model import *
 import json, argparse, sys
@@ -87,7 +81,6 @@ if __name__ == '__main__':
         ''' Parameters to determine Instrument Resolution '''
         inst_res = exp_param['broadening'] # Broadening factor added to observations by instrument
         use_inst_wgrid = exp_param['use_inst'] # Are you going to downgrade spectra to an instrument resolution
-        use_spirou_wgrid = exp_param['use_spirou'] # Are you going to use exactly spirou's grid or a constant resolution grid based off of a spirou order
         new_res = exp_param['inst_resolution']
 
         ##########
@@ -97,11 +90,11 @@ if __name__ == '__main__':
         ##########
 
         # Define the spectrum
-        stellar = Stellar_Spectrum(starting_resolution=R_start,oversample=oversample,order=exp_param['order'])#,order=20,T=3000,logg=5,metal=0)
+        stellar = StellarSpectrum(starting_resolution=R_start,oversample=oversample,order=exp_param['order'])#,order=20,T=3000,logg=5,metal=0)
 
         # We are going to immediately change this flux into a specific SNR flux
         # This is valid because we do not bin into instrument wavelegth grid, we will interpolate to the instrument wavelength grid
-        stellar.incorporate_SNR(SNR,use_inst_wgrid,use_spirou_wgrid,new_res)
+        stellar.incorporate_SNR(SNR,use_inst_wgrid,new_res)
 
 
         ##########
@@ -111,7 +104,7 @@ if __name__ == '__main__':
         ##########
 
         # Define the observations object
-        observations = Observations(native_wavegrid=stellar.phoenix_wgrid,spirou_wavegrid=stellar.spirou_wgrid,num=200)
+        observations = Observations(native_wavegrid=stellar.phoenix_wgrid,instrument_wavegrid=stellar.instrument_wgrid,num=200)
 
         # Define the dates
         start_date = '2020-01-01'
@@ -134,7 +127,7 @@ if __name__ == '__main__':
         # contaminated = observations.telluric_contaminate(real_tellurics)
 
         # Put into Instrument Resolution 
-        inst_wgrid, inst_spec, convolved = observations.instrument_captures(inst_res,use_inst_wgrid,use_spirou_wgrid,new_res)
+        inst_wgrid, inst_spec, convolved = observations.instrument_captures(inst_res,use_inst_wgrid,new_res)
 
         # Create noisy observations
         noisy, sig = observations.poisson(seed=exp_param['seeds'])
@@ -234,7 +227,6 @@ if __name__ == '__main__':
         return dfs
 
 
-    # results = loop_function(params[0])
     with Pool(16) as p:
         ### Run Through Each Parameter Configuration ###
         # pbar = tqdm(total=20*len(params), desc="Processing")

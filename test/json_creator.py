@@ -21,7 +21,6 @@ if __name__ == '__main__':
         "instrument":{
             "broadening": 70_000,
             "use_inst": True,
-            "use_spirou": True,
             "inst_resolution": [100_000]
         },
         "radial_vel_obs": {
