@@ -171,14 +171,11 @@ class Observations:
             Spectra convolved but still on native grid.
         """
         # Define the wavelength solution for observations
-        if use_inst_wgrid:
-            if use_spirou_wgrid:
-                use_grid = self.instrument_wavegrid
-            else:
-                dv_res = speed_of_light_ms / new_res
-                use_grid = get_magic_grid(self.instrument_wavegrid[0], self.instrument_wavegrid[-1], dv_res)
+        if use_spirou_wgrid:
+            use_grid = self.instrument_wavegrid
         else:
-            use_grid = self.native_wgrid
+            dv_res = speed_of_light_ms / new_res
+            use_grid = get_magic_grid(self.instrument_wavegrid[0], self.instrument_wavegrid[-1], dv_res)
 
         self.instrument_wgrid = use_grid
 
