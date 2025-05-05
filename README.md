@@ -1,4 +1,5 @@
-![My Image](logo.png) # pRVsim
+![My Image](logo.png) 
+# pRVsim
 
 **pRVsim** is a Python package for generating synthetic precision radial velocity (pRV) observations for a given star, instrument, and planetary system. It operates in a 2D spectral (2DS) format, where each spectrograph order is simulated independently.
 
