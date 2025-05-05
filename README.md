@@ -1,18 +1,19 @@
-# pRVsim
+![My Image](logo.png) # pRVsim
 
 **pRVsim** is a Python package for generating synthetic precision radial velocity (pRV) observations for a given star, instrument, and planetary system. It operates in a 2D spectral (2DS) format, where each spectrograph order is simulated independently.
 
-This tool is useful for simulating the effect of stellar and planetary RV signals, understanding interpolation and BERV handling, and testing design parameters for instruments and observations.
+This tool is useful for understanding when a template is a good tool to use for radial velocity measurements.
 
 ---
 
 ## Features
 
-- Generate synthetic stellar spectra at high sampling resolution
+- Generate PHOENIX synthetic stellar spectra for given stellar parameters
 - Define instruments and spectrograph orders
-- Inject planetary RV curves and compute BERV
-- Apply Doppler shifts and simulate photon noise using a per-km/s SNR
+- Inject planetary RV curves
+- Create synthetic observations
 - Flexible template construction from individual observations
+- Do RV estimation using a template-matching algorithm
 - Modular structure for testing different configurations
 
 ---
@@ -42,11 +43,12 @@ To explore the code on a per-order basis, use the Jupyter notebook located in th
 This notebook allows you to:
 - Define a high-resolution stellar spectrum
 - Choose an instrument and order to define the wavelength range
-- Set the desired signal-to-noise ratio (SNR) in terms of counts per 1 km/s
-- Simulate photon noise and create templates
-- Doppler shift observations and correct for BERV
+- Set the desired signal-to-noise ratio (SNR) in terms of counts per 1 km/s pixel
+- Create synthetic observations
+- Create templates
+- Do RV estimation
 
-**Note on SNR:** The SNR value refers to the flux counts for 1 km/s. For example, if your detector has 500 m/s pixels and you want ~10,000 photon counts per pixel, you should input an SNR of around 140.
+**Note on SNR:** The SNR value refers to the flux counts for a 1 km/s pixel. For example, if your detector has 500 m/s pixel size and you want ~10,000 photon counts per pixel, you should input an SNR of around 140.
 
 ---
 
