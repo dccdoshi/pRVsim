@@ -86,6 +86,33 @@ class StellarSpectrum:
             u.ph / (u.s * u.cm**2 * u.nm)
         ).value
 
+        #### To normalize correctly 
+        wv_range = [900/1000, 2400/1000]
+        phnx_inputs['wv_range'] = wv_range
+        phoenix_spec = PhoenixInterpGrid(**phnx_inputs)
+        spec = phoenix_spec.flux['Spectrum'].to_numpy()[0] # in erg/s/cm^s/cm
+        
+
+
+        ### Convert into appropriate units
+        phoenix_wgrid = phoenix_spec.wgrid*1000 # from microns to nm
+
+
+        flux_density_erg = spec * u.erg / (u.s * u.cm**2 * u.cm)
+        flux_density_erg = flux_density_erg.to(u.erg / (u.s * u.cm**2 * u.nm))
+
+        # Define the wavelength at which the flux density is measured
+        Lambda = phoenix_wgrid * u.nm  # Example wavelength in nm
+
+        # Calculate the energy of a single photon at the given wavelength
+        energy_per_photon = (h * c / Lambda).to(u.erg) / u.ph
+
+        # Convert the flux density to photons/s/cm^2/nm
+        stellar = (flux_density_erg / energy_per_photon).to(u.ph / (u.s * u.cm**2 * u.nm)).value
+        stell_med = np.median(stellar)
+
+        self.stellar /= stell_med
+
     def incorporate_SNR(self, SNR, use_inst_wgrid=True, new_res=None):
         """
         Rescales the flux to simulate observational SNR assuming a constant photon noise per 1 km/s pixel.
