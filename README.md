@@ -1,5 +1,5 @@
  
-<img src="logo.png" alt="drawing" width="400"/>
+<img src="logo.png" alt="drawing" width="600"/>
 
 # pRVsim
 
