@@ -57,12 +57,12 @@ This notebook allows you to:
 
 ### 2. Full experiment mode using the command line
 
-For running a full simulation across all desired orders and generating output data files, use the following two scripts:
+For running a full simulation across all desired orders and generating output data files, use the following two scripts in the `test/` folder:
 
 #### Step 1: Create your parameter file using the JSON creator.
 
 ```bash
-python json_creator2.py --param your_json_file.json
+python json_creator.py --param your_json_file.json
 ```
 
 #### Step 2: Run the experiment.
